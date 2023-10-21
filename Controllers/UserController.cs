@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using DataTransferApi.Model;
 using DataTransferApi.Services;
 using DataTransferApi.Dtos;
+using Microsoft.AspNetCore.Identity;
 
 namespace DataTransferApi.Controllers
 {
@@ -47,43 +48,6 @@ namespace DataTransferApi.Controllers
 
             return Ok(response);
         }
-
-        //[HttpGet("login/{username}")]
-        //public IActionResult Get(string username)
-        //{
-        //    var claims = new List<Claim> { new Claim(ClaimTypes.Name, username) };
-
-        //    var jwt = new JwtSecurityToken(
-        //        issuer: AuthOptions.ISSUER,
-        //        audience: AuthOptions.AUDIENCE,
-        //        claims: claims,
-        //        expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
-        //        signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-
-        //    var token = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-        //    return Ok(token);
-
-        //}
-        //[HttpGet("login")]
-        //public IActionResult Login([FromBody] Login request)
-        //{
-
-        //}
-
-
-        [Authorize]
-        [HttpGet("data")]
-        public IActionResult GetData() 
-        { 
-            return Ok(new {message = "hello from authorize sicret path"});
-        }
-
-
-        //private Account AuthenticateUser(string email, string password)
-        //{
-        //    return Accounts.SingleOrDefault(u => u.Email == email && u.Password == password);
-        //}
     }
 
     

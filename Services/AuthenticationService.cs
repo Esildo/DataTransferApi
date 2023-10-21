@@ -21,6 +21,7 @@ namespace DataTransferApi.Services
             _configuration = configuration;
         }
 
+        //Register
         public async Task<string> Register(RegisterRequest request)
         {
             var userByEmail = await _userManager.FindByEmailAsync(request.Email);
@@ -46,6 +47,8 @@ namespace DataTransferApi.Services
             return await Login(new LoginRequest { Username = request.Email, Password = request.Password });
         }
 
+
+        //Login
         public async Task<string> Login(LoginRequest request) 
         {
             var user = await _userManager.FindByNameAsync(request.Username);
@@ -62,9 +65,10 @@ namespace DataTransferApi.Services
 
             var authClaims = new List<Claim>
             {
-            new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.Email, user.Email),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(ClaimTypes.Name, user.UserName),
+                new(ClaimTypes.Email, user.Email),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
             var token = GetToken(authClaims);
