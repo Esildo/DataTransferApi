@@ -12,6 +12,9 @@ namespace DataTransferApi.Entities
 
         public string UserId { get; set; }
         public User User { get; set; } 
+
+        public int FileGroupId {  get; set; }
+        public FileGroup FileGroup { get; set; }
         
     }
 }

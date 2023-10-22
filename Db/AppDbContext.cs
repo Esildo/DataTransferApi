@@ -7,6 +7,8 @@ namespace DataTransferApi.Db
 {
     public class AppDbContext : IdentityDbContext<User>
     {
+
+        public DbSet<FileGroup> FileGroups { get; set; } = null!;
         public DbSet<SavedFile> SavedFiles { get; set; } = null!;
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
         { 
@@ -20,6 +22,11 @@ namespace DataTransferApi.Db
                 .WithMany(u => u.SavedFiles)
                 .HasForeignKey(f => f.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SavedFile>()
+                .HasOne<FileGroup>(f => f.FileGroup)
+                .WithMany(u => u.SavedFiles)
+                .HasForeignKey(f => f.FileGroupId);
         }
     }
 }
