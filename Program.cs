@@ -46,6 +46,8 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+
+builder.Services.AddTransient<IConverter, Converter>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 
 builder.Services.AddControllers();
