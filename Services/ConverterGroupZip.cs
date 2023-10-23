@@ -3,9 +3,9 @@ using System.IO.Compression;
 
 namespace DataTransferApi.Services
 {
-    public class Converter: IConverter
+    public class ConverterGroupZip: IConverterGroup
     {
-        public async Task<byte[]> ConvetGrTupZipAsync(IEnumerable<(byte[], string, string)> groupOfTup)
+        public async Task<(byte[],string,string)> ConvetGrTupleAsync(IEnumerable<(byte[], string, string)> groupOfTup)
         {
             return await Task.Run(() =>
             {
@@ -24,7 +24,7 @@ namespace DataTransferApi.Services
                     }
 
                     var zipBytes = compressedFileStream.ToArray();
-                    return zipBytes;
+                    return (zipBytes, "application/zip", "group.zip");
                 }
             });
         }

@@ -5,7 +5,6 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using DataTransferApi.Model;
 using DataTransferApi.Services;
 using DataTransferApi.Dtos;
 using Microsoft.AspNetCore.Identity;

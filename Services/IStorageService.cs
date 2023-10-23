@@ -14,5 +14,7 @@ namespace DataTransferApi.Services
 
         public Task<IEnumerable<(byte[], string, string)>> DownloadFileGroup(string groupName, string userId);
 
+        
+
     }
 }

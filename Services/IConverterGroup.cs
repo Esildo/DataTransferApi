@@ -1,7 +1,7 @@
 ﻿namespace DataTransferApi.Services
 {
-    public interface IConverter
+    public interface IConverterGroup
     {
-        public Task<byte[]> ConvetGrTupZipAsync(IEnumerable<(byte[], string, string)> groupOfTup);
+        public Task<(byte[], string, string)> ConvetGrTupleAsync(IEnumerable<(byte[], string, string)> groupOfTup);
     }
 }

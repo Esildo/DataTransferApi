@@ -10,6 +10,8 @@ using DataTransferApi.Db;
 using Microsoft.AspNetCore.Identity;
 using DataTransferApi.Services;
 using System.Text;
+using DataTransferApi.Heppers;
+using DataTransferApi.HeppersService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,8 +49,10 @@ builder.Services.AddAuthentication(options =>
     });
 
 
-builder.Services.AddTransient<IConverter, Converter>();
+builder.Services.AddTransient<IConverterGroup, ConverterGroupZip>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddTransient<ICommandDBService, EFCommandHelperService>();
+builder.Services.AddTransient<IOneTokenService,OneTokenStorageService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -107,6 +111,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.UseHttpsRedirection();
 

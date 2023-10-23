@@ -14,33 +14,36 @@ namespace DataTransferApi.Controllers
     [Authorize]
     public class FileOperations : ControllerBase
     {
-        private readonly IConverter _converter;
+        private readonly IConverterGroup _converter;
         private readonly UserManager<User> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IStorageService _storageService;
+        private readonly IOneTokenService _oneTokenService;
         
 
-        public FileOperations(UserManager<User> userManager, IHttpContextAccessor httpContextAccessor, IStorageService storageService, IConverter converter)
+        public FileOperations(UserManager<User> userManager, IHttpContextAccessor httpContextAccessor, IStorageService storageService
+                        , IConverterGroup converter, IOneTokenService oneTokenService)
         {
+            _oneTokenService = oneTokenService;
             _converter = converter;
             _storageService = storageService;
             _userManager = userManager;
             _httpContextAccessor = httpContextAccessor;
         }
 
-        [HttpGet("data")]
-        public async Task<IActionResult> GetData()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //[HttpGet("data")]
+        //public async Task<IActionResult> GetData()
+        //{
+        //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (userId == null)
-            {
-                return BadRequest("Пользователь не найден");
-            }
+        //    if (userId == null)
+        //    {
+        //        return BadRequest("Пользователь не найден");
+        //    }
            
 
-            return Ok(new { message = $"Here {userId}" });
-        }
+        //    return Ok(new { message = $"Here {userId}" });
+        //}
 
       
         [HttpPost("upload")]
@@ -104,8 +107,8 @@ namespace DataTransferApi.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
             {
-                var fileResult = await _storageService.DownloadFile(groupName, fileName, userId);
-                return File(fileResult.Item1, fileResult.Item2, fileResult.Item3);
+                var tupleResult = await _storageService.DownloadFile(groupName, fileName, userId);
+                return File(tupleResult.Item1, tupleResult.Item2, tupleResult.Item3);
             }
             catch(Exception ex) 
             {
@@ -118,10 +121,10 @@ namespace DataTransferApi.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             try
-            {
+            { 
                 var groupTuples = await _storageService.DownloadFileGroup(groupName, userId);
-                var zipBytes = await _converter.ConvetGrTupZipAsync(groupTuples);
-                return File(zipBytes, "application/zip", "group.zip");
+                var tupleResult = await _converter.ConvetGrTupleAsync(groupTuples);
+                return File(tupleResult.Item1, tupleResult.Item2,tupleResult.Item3);
                 
                 //
                 //return filesGroup;
@@ -131,6 +134,67 @@ namespace DataTransferApi.Controllers
                 throw ex;
             }
         }
+
+        [HttpGet("onelinkfile")]
+        public async Task<IActionResult> GetLinkFile(string groupName, string fileName)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var tokenGet = await _oneTokenService.CreateOneFileTokenAsync(groupName,fileName,userId);
+                string link = Url.Action("DownloadFileLink", "FileOperations", new {token = tokenGet }, Request.Scheme);
+                return Ok(link);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpGet("onelinkgroup")]
+        public async Task<IActionResult> GetLinkGroup(string groupName)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var tokenGet = await _oneTokenService.CreateOneGroupTokenAsync(groupName, userId);
+                string link = Url.Action("DownloadFileLink", "FileOperations", new { token = tokenGet }, Request.Scheme);
+                return Ok(link);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+
+        [AllowAnonymous]
+        [HttpGet("dowlowdanon")]
+        public async Task<IActionResult> DownloadFileLink(string token)
+        {
+            try
+            {
+                int countToken = await _oneTokenService.TokenCheck(token);
+                if(countToken == 1)
+                {
+                    var fileTuple = await _oneTokenService.DownloadFileToken(token);
+                    return File(fileTuple.Item1, fileTuple.Item2, fileTuple.Item3);
+
+                }
+                else
+                {
+                    var groupTuples = await _oneTokenService.DownLoadFileGroupAsync(token);
+                    var tupleResult = await _converter.ConvetGrTupleAsync(groupTuples);
+                    return File(tupleResult.Item1, tupleResult.Item2, tupleResult.Item3);
+                }
+            }
+            catch (Exception ex) 
+            {
+                throw ex;
+            }
+        }
+
 
     }
 }

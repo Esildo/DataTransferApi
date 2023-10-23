@@ -8,6 +8,7 @@ namespace DataTransferApi.Db
     public class AppDbContext : IdentityDbContext<User>
     {
 
+        public DbSet<TokenLink> TokenLinks { get; set; } = null!;   
         public DbSet<FileGroup> FileGroups { get; set; } = null!;
         public DbSet<SavedFile> SavedFiles { get; set; } = null!;
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 

@@ -4,7 +4,6 @@ using System.Text;
 using DataTransferApi.Authentication;
 using DataTransferApi.Dtos;
 using DataTransferApi.Entities;
-using DataTransferApi.Model;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 

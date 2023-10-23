@@ -1,4 +1,5 @@
 ﻿using DataTransferApi.Db;
+using DataTransferApi.Heppers;
 using DataTransferApi.Entities;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Web;
 using static Azure.Core.HttpHeader;
+using DataTransferApi.HeppersService;
 
 namespace DataTransferApi.Services
 {
@@ -17,11 +19,13 @@ namespace DataTransferApi.Services
     {
         private readonly IWebHostEnvironment _env;
         private readonly AppDbContext _appDbContext;
+        private readonly ICommandDBService _efHelper;
 
-        public StorageService(IWebHostEnvironment env, AppDbContext appDbContext)
+        public StorageService(IWebHostEnvironment env, AppDbContext appDbContext, ICommandDBService efHelper)
         {
             _env = env;
             _appDbContext = appDbContext;
+            _efHelper = efHelper;
         }
 
 
@@ -100,6 +104,7 @@ namespace DataTransferApi.Services
                                                             .Select(f => f.FileGroup)
                                                             .Distinct()
                                                             .ToArrayAsync();
+
             return groups;
         }
 
@@ -108,7 +113,7 @@ namespace DataTransferApi.Services
         {
             try
             {
-                var fileArray = await GetFileGroupAsync(groupName, userId);
+                var fileArray = await _efHelper.GetFileGroupAsync(groupName, userId);
                 if(!fileArray.Any())
                 {
                     throw new Exception($"There are not {groupName}");
@@ -116,7 +121,7 @@ namespace DataTransferApi.Services
                 List<(byte[], string, string)> listFileTuples = new List<(byte[], string, string)>();
                 foreach (var file in fileArray)
                 {
-                    var fileTuple = await ReturnFileTupleAsync(file.SavedFilePath);
+                    var fileTuple = await _efHelper.ReturnFileTupleAsync(file.SavedFilePath);
                     listFileTuples.Add(fileTuple);
                 }
                 return listFileTuples;
@@ -132,7 +137,7 @@ namespace DataTransferApi.Services
             try
             {
                 //Select filePath from db
-                var filePath = await GetFileByName(groupName, fileName, userId);
+                var filePath = await _efHelper.GetFilePathByNameAsync(groupName, fileName, userId);
 
                 //Need to handle 
                 if (filePath == null)
@@ -140,7 +145,7 @@ namespace DataTransferApi.Services
                     throw (new Exception("file not found"));
                 }
 
-                var fileTuple = await ReturnFileTupleAsync(filePath);
+                var fileTuple = await _efHelper.ReturnFileTupleAsync(filePath);
                 return fileTuple;            
             }
             catch(Exception ex) 
@@ -151,17 +156,7 @@ namespace DataTransferApi.Services
             
             
         
-        //Method to return file tuple
-        private async Task<(byte[], string, string)> ReturnFileTupleAsync(string filePath)
-        {
-            var provider = new FileExtensionContentTypeProvider();
-            if (!provider.TryGetContentType(filePath, out var _ContentType))
-            {
-                _ContentType = "application/octet-stream";
-            }
-            var byteFile = await File.ReadAllBytesAsync(filePath);
-            return (byteFile, _ContentType, Path.GetFileName(filePath));
-        }
+        
 
 
         //Method to create puth for group  
@@ -177,7 +172,7 @@ namespace DataTransferApi.Services
 
 
 
-        //Check StringBuilder !
+   
         //Method to create fullpath for file and return  new file name 
         private string GetFullPath(string groupDerictory, string curPath,IFormFile file, out string newFileName)
         {
@@ -191,26 +186,6 @@ namespace DataTransferApi.Services
                 count++;
             }
             return curPath;
-        }
-
-
-        //Select filePath from db 
-        private async Task<string> GetFileByName(string groupName, string fileName, string userId)
-        {
-            var path =  await _appDbContext.SavedFiles.Where(file => file.UserId == userId
-                && file.FileGroup.Name == groupName
-                && file.SavedFileName == fileName)
-                    .Select(s => s.SavedFilePath)
-                    .SingleOrDefaultAsync();
-            return path;
-        }
-
-        private async Task<IEnumerable<SavedFile>> GetFileGroupAsync(string groupName, string userId)
-        {
-            var fileArray = await _appDbContext.SavedFiles.Where(g => g.UserId == userId
-                                                        && g.FileGroup.Name == groupName)
-                                                        .ToArrayAsync();
-            return fileArray;
         }
     }
 
