@@ -101,7 +101,7 @@ namespace DataTransferApi.Controllers
             }
         }
 
-        [HttpPost("downloadfile")]
+        [HttpGet("downloadfile")]
         public async Task<IActionResult> DowloadFile(string groupName,string fileName)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -135,6 +135,7 @@ namespace DataTransferApi.Controllers
             }
         }
 
+
         [HttpGet("onelinkfile")]
         public async Task<IActionResult> GetLinkFile(string groupName, string fileName)
         {
@@ -150,6 +151,7 @@ namespace DataTransferApi.Controllers
                 throw ex;
             }
         }
+
 
         [HttpGet("onelinkgroup")]
         public async Task<IActionResult> GetLinkGroup(string groupName)
@@ -196,5 +198,37 @@ namespace DataTransferApi.Controllers
         }
 
 
+        [HttpGet("checkload")]
+        public async Task<IActionResult> CheckLoadFile(string groupName, string fileName)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                int percatage= await _storageService.LoadPercAsync(groupName, fileName, userId);
+                string percStr = $"{percatage} upload {fileName}";
+                return Ok(percStr);
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpGet("checkgroupload")]
+        public async Task<IActionResult> CheckLoadGroup(string groupName)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                int percatage = await _storageService.LoadPercGroupAsync(groupName , userId);
+                string percStr = $"{percatage} upload {groupName}";
+                return Ok(percStr);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
     }
 }

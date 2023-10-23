@@ -47,6 +47,9 @@ namespace DataTransferApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<long>("ExpectedSize")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("FileGroupId")
                         .HasColumnType("int");
 

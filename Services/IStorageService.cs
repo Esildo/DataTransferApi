@@ -14,7 +14,8 @@ namespace DataTransferApi.Services
 
         public Task<IEnumerable<(byte[], string, string)>> DownloadFileGroup(string groupName, string userId);
 
-        
+        public Task<int> LoadPercAsync(string groupName, string fileName, string userId);
 
+        public Task<int> LoadPercGroupAsync(string groupName, string userId);
     }
 }

@@ -78,6 +78,7 @@ namespace DataTransferApi.Services
                     {
                         SavedFileName = correctName,
                         SavedFilePath = fullPath,
+                        ExpectedSize = file.Length,
                         UserId = userId,
                         FileGroupId = fileGroup.Id
                     };
@@ -108,7 +109,7 @@ namespace DataTransferApi.Services
             return groups;
         }
 
-
+        //Dowload group of files
         public async Task<IEnumerable<(byte[], string, string)>> DownloadFileGroup(string groupName, string userId)
         {
             try
@@ -118,6 +119,16 @@ namespace DataTransferApi.Services
                 {
                     throw new Exception($"There are not {groupName}");
                 }
+
+                foreach(var file in fileArray)
+                {
+                    if(CheckLoad(file) != 100)
+                    {
+                        //handle
+                        throw new Exception("not full load");
+                    }
+                }
+
                 List<(byte[], string, string)> listFileTuples = new List<(byte[], string, string)>();
                 foreach (var file in fileArray)
                 {
@@ -132,31 +143,90 @@ namespace DataTransferApi.Services
             }
         }
 
+
+        //Download single file
         public async Task<(byte[], string, string)> DownloadFile(string groupName, string fileName, string userId)
         {
             try
             {
-                //Select filePath from db
-                var filePath = await _efHelper.GetFilePathByNameAsync(groupName, fileName, userId);
+                //Select file from db
+                var savedFile = await _efHelper.FileByNameAsync(groupName, fileName, userId);
+                if(CheckLoad(savedFile) != 100)
+                {
+                    //handle
+                    throw new Exception("Not full file");
+                }
+
 
                 //Need to handle 
-                if (filePath == null)
+                if (savedFile.SavedFilePath == null)
                 {
                     throw (new Exception("file not found"));
                 }
-
-                var fileTuple = await _efHelper.ReturnFileTupleAsync(filePath);
+                
+                var fileTuple = await _efHelper.ReturnFileTupleAsync(savedFile.SavedFilePath);
                 return fileTuple;            
             }
+            //handle
             catch(Exception ex) 
             {
                 throw;
             }
         }
             
+        
+        public async Task<int> LoadPercGroupAsync(string groupName,string userId)
+        {
+            int i;
+            int sum;
+
+            i = 0;
+            sum = 0;
+            var fileGroup = await _efHelper.GetFileGroupAsync(groupName, userId);
+
+            foreach (var file in fileGroup) 
+            {
+                sum += CheckLoad(file);
+                i++;
+            }
+            return sum / i;
+        }
+
+        
+        public async Task<int> LoadPercAsync(string groupName,string fileName, string userId)
+        {
+
+            try
+            {
+                var savedFile = await _efHelper.FileByNameAsync(groupName, fileName, userId);
+
+                return CheckLoad(savedFile);
+
+            }
+            //handle
+            catch(Exception ex)
+            {
+                throw;
+            }
+        }
+
             
-        
-        
+        private int CheckLoad(SavedFile savedFile) 
+        {
+            if (File.Exists(savedFile.SavedFilePath))
+            {
+                FileInfo fileInfo = new FileInfo(savedFile.SavedFilePath);
+                long fileLength = fileInfo.Length;
+
+                return (int)((fileLength / savedFile.ExpectedSize) * 100);
+            }
+            else
+            {
+                //handle
+                throw new Exception("File Path not found");
+            }
+        }
+
 
 
         //Method to create puth for group  
@@ -169,8 +239,6 @@ namespace DataTransferApi.Services
             }
             return groupNumber;
         }
-
-
 
    
         //Method to create fullpath for file and return  new file name 

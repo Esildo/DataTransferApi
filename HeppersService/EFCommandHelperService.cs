@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataTransferApi.Heppers
 {
-    public class EFCommandHelperService: ICommandDBService
+    public class EFCommandHelperService : ICommandDBService
     {
         private readonly AppDbContext _appDbContext;
         public EFCommandHelperService(AppDbContext appDbContext)
@@ -40,6 +40,11 @@ namespace DataTransferApi.Heppers
                 && file.SavedFileName == fileName)
                     .Select(s => s.SavedFilePath)
                     .SingleOrDefaultAsync();
+            if (path == null)
+            {
+                //handle
+                throw new Exception("null path");
+            }
             return path;
         }
 
@@ -53,6 +58,20 @@ namespace DataTransferApi.Heppers
             }
             var byteFile = await File.ReadAllBytesAsync(filePath);
             return (byteFile, _ContentType, Path.GetFileName(filePath));
+        }
+
+        public async Task<SavedFile> FileByNameAsync(string groupName, string fileName, string userId)
+        {
+            var savedFile = await _appDbContext.SavedFiles.Where(f => f.FileGroup.Name == groupName
+                                                            && f.UserId == userId
+                                                            && f.SavedFileName == fileName)
+                                                            .SingleOrDefaultAsync();
+            if (savedFile == null)
+            {
+                //handle
+                throw new Exception("no file");
+            }
+            return savedFile;
         }
     }
 }

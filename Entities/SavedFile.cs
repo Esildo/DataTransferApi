@@ -9,6 +9,7 @@ namespace DataTransferApi.Entities
         public int Id {  get; set; }
         public string SavedFileName { get; set; }
         public string SavedFilePath { get; set; }
+        public long ExpectedSize { get; set; }
 
         public string UserId { get; set; }
         public User User { get; set; } 
