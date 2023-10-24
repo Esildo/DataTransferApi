@@ -1,5 +1,6 @@
 ﻿using DataTransferApi.Db;
 using DataTransferApi.Entities;
+using DataTransferApi.Exceptions;
 using DataTransferApi.HeppersService;
 using DataTransferApi.Services;
 using Microsoft.AspNetCore.StaticFiles;
@@ -20,6 +21,11 @@ namespace DataTransferApi.Heppers
             var fileArray = await _appDbContext.SavedFiles.Where(g => g.UserId == userId
                                                         && g.FileGroup.Name == groupName)
                                                         .ToArrayAsync();
+            if(!fileArray.Any())
+            {
+                throw(new GroupNotFoundException("Group not found",groupName));
+            }
+
             return fileArray;
         }
 
@@ -29,6 +35,10 @@ namespace DataTransferApi.Heppers
                                                         && g.FileGroup.Name == groupName)
                                                         .Select(f => f.SavedFileName)
                                                         .ToArrayAsync();
+            if(!fileArray.Any()) 
+            {
+                throw new NotFoundException("Files found");
+            }
             return fileArray;
         }
 
@@ -40,11 +50,11 @@ namespace DataTransferApi.Heppers
                 && file.SavedFileName == fileName)
                     .Select(s => s.SavedFilePath)
                     .SingleOrDefaultAsync();
-            if (path == null)
+            if(path == null)
             {
-                //handle
-                throw new Exception("null path");
+                throw new System.IO.FileNotFoundException("File not found in path");
             }
+
             return path;
         }
 
@@ -68,8 +78,7 @@ namespace DataTransferApi.Heppers
                                                             .SingleOrDefaultAsync();
             if (savedFile == null)
             {
-                //handle
-                throw new Exception("no file");
+                throw new System.IO.FileNotFoundException("File not Found",fileName);
             }
             return savedFile;
         }

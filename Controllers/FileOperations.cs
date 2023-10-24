@@ -19,7 +19,9 @@ namespace DataTransferApi.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IStorageService _storageService;
         private readonly IOneTokenService _oneTokenService;
-        
+        private readonly SemaphoreSlim _tokenLock = new SemaphoreSlim(1);
+
+
 
         public FileOperations(UserManager<User> userManager, IHttpContextAccessor httpContextAccessor, IStorageService storageService
                         , IConverterGroup converter, IOneTokenService oneTokenService)
@@ -177,12 +179,13 @@ namespace DataTransferApi.Controllers
         {
             try
             {
+                await _tokenLock.WaitAsync();
+
                 int countToken = await _oneTokenService.TokenCheck(token);
-                if(countToken == 1)
+                if (countToken == 1)
                 {
                     var fileTuple = await _oneTokenService.DownloadFileToken(token);
                     return File(fileTuple.Item1, fileTuple.Item2, fileTuple.Item3);
-
                 }
                 else
                 {
@@ -190,10 +193,16 @@ namespace DataTransferApi.Controllers
                     var tupleResult = await _converter.ConvetGrTupleAsync(groupTuples);
                     return File(tupleResult.Item1, tupleResult.Item2, tupleResult.Item3);
                 }
+                
             }
             catch (Exception ex) 
             {
                 throw ex;
+            }
+            finally
+            {
+                // Важно освободить мьютекс, чтобы другие запросы могли получить доступ
+                _tokenLock.Release();
             }
         }
 

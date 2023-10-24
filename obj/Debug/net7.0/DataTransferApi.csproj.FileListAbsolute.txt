@@ -81,3 +81,7 @@ C:\Users\Nickv\source\repos\DataTransferApi\bin\Debug\net7.0\Microsoft.EntityFra
 C:\Users\Nickv\source\repos\DataTransferApi\bin\Debug\net7.0\Microsoft.Extensions.DependencyModel.dll
 C:\Users\Nickv\source\repos\DataTransferApi\bin\Debug\net7.0\Mono.TextTemplating.dll
 C:\Users\Nickv\source\repos\DataTransferApi\bin\Debug\net7.0\System.CodeDom.dll
+C:\Users\Nickv\source\repos\DataTransferApi\bin\Debug\net7.0\System.Net.Http.Formatting.dll
+C:\Users\Nickv\source\repos\DataTransferApi\bin\Debug\net7.0\System.Web.Http.dll
+C:\Users\Nickv\source\repos\DataTransferApi\bin\Debug\net7.0\Newtonsoft.Json.dll
+C:\Users\Nickv\source\repos\DataTransferApi\bin\Debug\net7.0\Newtonsoft.Json.Bson.dll

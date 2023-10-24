@@ -6,6 +6,7 @@ using DataTransferApi.HeppersService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using DataTransferApi.Exceptions;
 using System;
 using System.Diagnostics.Eventing.Reader;
 using System.Runtime.CompilerServices;
@@ -62,7 +63,11 @@ namespace DataTransferApi.Services
         public async Task<(byte[],string,string)> DownloadFileToken(string token)
         {
 
-            string path = await _appDbContext.TokenLinks.Where(t => t.Token == token).Select(p => p.Path).SingleOrDefaultAsync();
+            var path = await _appDbContext.TokenLinks.Where(t => t.Token == token).Select(p => p.Path).SingleOrDefaultAsync();
+            if(path == null)
+            {
+                throw new NotFoundException("Token not found ");
+            }
             DeleteToken(token);
             return await _efHelper.ReturnFileTupleAsync(path);
         }
@@ -95,14 +100,14 @@ namespace DataTransferApi.Services
             if (CountToken == 0)
             {
                 //handle
-                throw new Exception("No token there");
+                throw new TokenException("Token doesn't excist");
             }
             timeValid =  CheckDataAsync(tokenCheck);
             if(!timeValid)
             {
                 DeleteTimout();
                 //handle
-                throw new Exception("Time out Token");
+                throw new TokenTimeOutException("token time has expired");
             }
             return CountToken;
         }
@@ -136,7 +141,6 @@ namespace DataTransferApi.Services
             {
                 return false;
             }
-            return true;
         }
 
         //delete all time out tokens

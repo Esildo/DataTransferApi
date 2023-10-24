@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Web;
 using static Azure.Core.HttpHeader;
 using DataTransferApi.HeppersService;
+using DataTransferApi.Exceptions;
 
 namespace DataTransferApi.Services
 {
@@ -33,8 +34,7 @@ namespace DataTransferApi.Services
         //Save group of files in file directory
         public async Task SaveToStorageAsync(List<IFormFile> files, string userName, string userId)
         {
-            try
-            {
+
                 string fileStoragePath = Path.Combine(_env.ContentRootPath, "FileStorage");
 
 
@@ -85,16 +85,14 @@ namespace DataTransferApi.Services
                     _appDbContext.Add(saveFile);
                     _appDbContext.SaveChanges();
                 }
-            }
-            catch (Exception ex)
-            { }
+    
         }
 
         //Search all user files 
         public async Task<IEnumerable<SavedFile>> SearchFilesAsync(string userId)
         {
             var userFiles = await _appDbContext.SavedFiles.Where(u => u.UserId == userId).ToArrayAsync();
-
+            
             return userFiles;
         }
 
@@ -112,66 +110,45 @@ namespace DataTransferApi.Services
         //Dowload group of files
         public async Task<IEnumerable<(byte[], string, string)>> DownloadFileGroup(string groupName, string userId)
         {
-            try
-            {
-                var fileArray = await _efHelper.GetFileGroupAsync(groupName, userId);
-                if(!fileArray.Any())
-                {
-                    throw new Exception($"There are not {groupName}");
-                }
+            var fileArray = await _efHelper.GetFileGroupAsync(groupName, userId);
 
-                foreach(var file in fileArray)
-                {
-                    if(CheckLoad(file) != 100)
-                    {
-                        //handle
-                        throw new Exception("not full load");
-                    }
-                }
-
-                List<(byte[], string, string)> listFileTuples = new List<(byte[], string, string)>();
-                foreach (var file in fileArray)
-                {
-                    var fileTuple = await _efHelper.ReturnFileTupleAsync(file.SavedFilePath);
-                    listFileTuples.Add(fileTuple);
-                }
-                return listFileTuples;
-            }
-            catch (Exception ex) 
+            foreach(var file in fileArray)
             {
-                throw ex;
+                int perLoad = CheckLoad(file);
+                if (perLoad != 100)
+                {
+                    throw new NotFileFullLoad("The file is not fully downloaded",file.SavedFileName, perLoad);
+                }
             }
+
+            List<(byte[], string, string)> listFileTuples = new List<(byte[], string, string)>();
+            foreach (var file in fileArray)
+            {
+                var fileTuple = await _efHelper.ReturnFileTupleAsync(file.SavedFilePath);
+                listFileTuples.Add(fileTuple);
+            }
+            return listFileTuples;
+            
         }
 
 
         //Download single file
         public async Task<(byte[], string, string)> DownloadFile(string groupName, string fileName, string userId)
         {
-            try
-            {
-                //Select file from db
-                var savedFile = await _efHelper.FileByNameAsync(groupName, fileName, userId);
-                if(CheckLoad(savedFile) != 100)
-                {
-                    //handle
-                    throw new Exception("Not full file");
-                }
+            
+            //Select file from db
+            var savedFile = await _efHelper.FileByNameAsync(groupName, fileName, userId);
 
-
-                //Need to handle 
-                if (savedFile.SavedFilePath == null)
-                {
-                    throw (new Exception("file not found"));
-                }
-                
-                var fileTuple = await _efHelper.ReturnFileTupleAsync(savedFile.SavedFilePath);
-                return fileTuple;            
-            }
-            //handle
-            catch(Exception ex) 
+            int perLoad = CheckLoad(savedFile);
+            if(perLoad != 100)
             {
-                throw;
+                throw new NotFileFullLoad("The file is not fully downloaded", savedFile.SavedFileName, perLoad);
             }
+
+            var fileTuple = await _efHelper.ReturnFileTupleAsync(savedFile.SavedFilePath);
+            return fileTuple;            
+   
+
         }
             
         
@@ -195,19 +172,9 @@ namespace DataTransferApi.Services
         
         public async Task<int> LoadPercAsync(string groupName,string fileName, string userId)
         {
-
-            try
-            {
                 var savedFile = await _efHelper.FileByNameAsync(groupName, fileName, userId);
 
                 return CheckLoad(savedFile);
-
-            }
-            //handle
-            catch(Exception ex)
-            {
-                throw;
-            }
         }
 
             
@@ -223,7 +190,7 @@ namespace DataTransferApi.Services
             else
             {
                 //handle
-                throw new Exception("File Path not found");
+                throw new System.IO.FileNotFoundException("File not found");
             }
         }
 
