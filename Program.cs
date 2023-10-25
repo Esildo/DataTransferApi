@@ -6,7 +6,6 @@ using DataTransferApi.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using DataTransferApi.Entities;
-using DataTransferApi.Db;
 using Microsoft.AspNetCore.Identity;
 using DataTransferApi.Services;
 using System.Text;
@@ -97,10 +96,11 @@ builder.Services.AddCors(options =>
         b =>
         {
             b
-                .WithOrigins("http://localhost:5070","https://localhost:7001")
+                .WithOrigins("http://localhost:5070", "https://localhost:7001")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
+
 });
 
 var app = builder.Build();

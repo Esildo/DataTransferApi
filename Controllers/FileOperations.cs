@@ -1,4 +1,6 @@
-﻿using DataTransferApi.Entities;
+﻿using Azure;
+using Azure.Core;
+using DataTransferApi.Entities;
 using DataTransferApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.IO.Compression;
+using System.Net;
 using System.Security.Claims;
 
 namespace DataTransferApi.Controllers
