@@ -90,4 +90,7 @@ $RECYCLE.BIN/
 *.userosscache
 *.sln.docstates
 
+
+bin/Debug/net7.0/
 FileStorage/
+obj/
