@@ -11,6 +11,7 @@ using System.Web;
 using static Azure.Core.HttpHeader;
 using DataTransferApi.HeppersService;
 using DataTransferApi.Exceptions;
+using DataTransferApi.Dtos;
 
 namespace DataTransferApi.Services
 {
@@ -89,19 +90,27 @@ namespace DataTransferApi.Services
         }
 
         //Search all user files 
-        public async Task<IEnumerable<SavedFile>> SearchFilesAsync(string userId)
+        public async Task<IEnumerable<FileRequest>> SearchFilesAsync(string userId)
         {
             var userFiles = await _appDbContext.SavedFiles.Where(u => u.UserId == userId)
+                                                            .Select(sf => new FileRequest
+                                                            {
+                                                                GroupName = _appDbContext.FileGroups
+                                                                    .Where(g => g.Id == sf.FileGroupId)
+                                                                    .Select(g => g.Name)
+                                                                    .FirstOrDefault(),
+                                                                FileName = sf.SavedFileName
+                                                            })
                                                             .ToArrayAsync();
-            
+
             return userFiles;
         }
 
         //Search all user groups
-        public async Task<IEnumerable<FileGroup>> SearchGroupsAsync(string userId)
+        public async Task<IEnumerable<string>> SearchGroupsAsync(string userId)
         {
             var groups = await _appDbContext.SavedFiles.Where(file => file.UserId == userId)
-                                                            .Select(f => f.FileGroup)
+                                                            .Select(f => f.FileGroup.Name)
                                                             .Distinct()
                                                             .ToArrayAsync();
 

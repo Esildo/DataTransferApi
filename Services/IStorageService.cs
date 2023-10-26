@@ -1,4 +1,5 @@
-﻿using DataTransferApi.Entities;
+﻿using DataTransferApi.Dtos;
+using DataTransferApi.Entities;
 
 namespace DataTransferApi.Services
 {
@@ -6,9 +7,9 @@ namespace DataTransferApi.Services
     {
         public Task SaveToStorageAsync(List<IFormFile> file, string userName, string userId);
 
-        public Task<IEnumerable<FileGroup>> SearchGroupsAsync(string userId);
+        public Task<IEnumerable<string>> SearchGroupsAsync(string userId);
 
-        public Task<IEnumerable<SavedFile>> SearchFilesAsync(string userId);
+        public Task<IEnumerable<FileRequest>> SearchFilesAsync(string userId);
 
         public Task<(byte[], string, string)>DownloadFile(string groupName, string fileName, string userId);
 
