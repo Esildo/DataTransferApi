@@ -90,4 +90,4 @@ $RECYCLE.BIN/
 *.userosscache
 *.sln.docstates
 
-FileStorage
+FileStorage/

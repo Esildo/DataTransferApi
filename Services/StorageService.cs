@@ -91,7 +91,8 @@ namespace DataTransferApi.Services
         //Search all user files 
         public async Task<IEnumerable<SavedFile>> SearchFilesAsync(string userId)
         {
-            var userFiles = await _appDbContext.SavedFiles.Where(u => u.UserId == userId).ToArrayAsync();
+            var userFiles = await _appDbContext.SavedFiles.Where(u => u.UserId == userId)
+                                                            .ToArrayAsync();
             
             return userFiles;
         }

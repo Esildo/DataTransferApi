@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataTransferApi.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitalMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -56,7 +56,7 @@ namespace DataTransferApi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -69,8 +69,8 @@ namespace DataTransferApi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Path = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Path = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExpireDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -190,10 +190,10 @@ namespace DataTransferApi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SavedFileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SavedFilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SavedFileName = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    SavedFilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExpectedSize = table.Column<long>(type: "bigint", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     FileGroupId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -253,14 +253,29 @@ namespace DataTransferApi.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_FileGroups_Name",
+                table: "FileGroups",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SavedFiles_FileGroupId",
                 table: "SavedFiles",
                 column: "FileGroupId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SavedFiles_SavedFileName",
+                table: "SavedFiles",
+                column: "SavedFileName");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SavedFiles_UserId",
                 table: "SavedFiles",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TokenLinks_Token",
+                table: "TokenLinks",
+                column: "Token");
         }
 
         /// <inheritdoc />

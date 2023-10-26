@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataTransferApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231025155525_AddIndexMigration")]
-    partial class AddIndexMigration
+    [Migration("20231026010204_InitalMigration")]
+    partial class InitalMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,7 +34,6 @@ namespace DataTransferApi.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -59,15 +58,12 @@ namespace DataTransferApi.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("SavedFileName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SavedFilePath")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -93,11 +89,9 @@ namespace DataTransferApi.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Path")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Token")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -316,8 +310,7 @@ namespace DataTransferApi.Migrations
                     b.HasOne("DataTransferApi.Entities.User", "User")
                         .WithMany("SavedFiles")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("FileGroup");
 
