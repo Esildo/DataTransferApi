@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "SwBU3HpNdYTxIqHrZ/pffY1SOe8fJjsX74gJ+m7B81s3ji0l0z8/+sutOHHEAGN3QthfcMGr3Qnfs0yPh2ajzQ==",
+  "dgSpecHash": "+eWMEkKcHo8wHiXuWUaiE/b4H0pEf5EmGoEicOWiFes5610iW2RoCR0cXowdRXngXmJHDEHCOXJ7Ptk5nNMtKA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Nickv\\source\\repos\\TransferApi\\DataTransferApi-master\\DataTransferApi.csproj",
+  "projectFilePath": "C:\\Users\\Nickv\\Transfer\\DataTransferApi\\DataTransferApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Nickv\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\Nickv\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",

@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000" # Adjust as needed
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development # Set your environment
+      - ConnectionStrings__DefaultConnection="Server=mssql;Database=InitialDatabase;User=sa;Password=A&VeryComplex123Password;Encrypt=False"
+    depends_on:
+      - mssql
+
+  mssql:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    container_name: sql_server2022
+    ports: # not actually needed, because the two services are on the same network
+      - "1433:1433" 
+    environment:
+      - ACCEPT_EULA=y
+      - SA_PASSWORD=A&VeryComplex123Password

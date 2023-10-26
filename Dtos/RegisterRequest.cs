@@ -4,6 +4,7 @@ namespace DataTransferApi.Dtos
 {
     public class RegisterRequest
     {
+        #nullable enable
         [Required]
         public string? UserName { get; set; }
 
@@ -12,5 +13,6 @@ namespace DataTransferApi.Dtos
 
         [Required]
         public string? Password {  get; set; }
+        #nullable disable
     }
 }

@@ -52,7 +52,7 @@ namespace DataTransferApi.Heppers
                     .SingleOrDefaultAsync();
             if(path == null)
             {
-                throw new System.IO.FileNotFoundException("File not found in path");
+                throw new FileNotFoundException($"File {fileName} not found in path");
             }
 
             return path;
@@ -78,7 +78,7 @@ namespace DataTransferApi.Heppers
                                                             .SingleOrDefaultAsync();
             if (savedFile == null)
             {
-                throw new System.IO.FileNotFoundException("File not Found",fileName);
+                throw new FileNotFoundException($"File {fileName} or group {groupName} not Found  ");
             }
             return savedFile;
         }

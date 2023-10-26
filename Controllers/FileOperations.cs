@@ -13,10 +13,16 @@ using System.Security.Claims;
 
 namespace DataTransferApi.Controllers
 {
+    
+
+
+
     [Route("api/[controller]")]
+    [TypeFilter(typeof(ExceptionFilter))]
     [Authorize]
     public class FileOperations : ControllerBase
     {
+        private readonly ILogger<ExceptionFilter> _logger;
         private readonly IConverterGroup _converter;
         private readonly UserManager<User> _userManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -42,19 +48,10 @@ namespace DataTransferApi.Controllers
         {
             var userName = User.FindFirstValue(ClaimTypes.Name);
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if(files == null)
-            {
-                return BadRequest();
-            }
-            try 
-            {
-                await _storageService.SaveToStorageAsync(files, userName, userId);
-                return Ok();
-            }
-            catch (Exception ex) 
-            {
-                throw;
-            }
+            await _storageService.SaveToStorageAsync(files, userName, userId);
+            return Ok();
+            
+
 
         }
 
@@ -63,15 +60,10 @@ namespace DataTransferApi.Controllers
         public async Task<IActionResult> SearchUserFileGroups()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            {
-                var userFileGroups = await _storageService.SearchGroupsAsync(userId);
-                return Ok(userFileGroups);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"{ex.Message}");
-            }
+            var userFileGroups = await _storageService.SearchGroupsAsync(userId);
+            return Ok(userFileGroups);
+            
+
         }
 
 
@@ -80,50 +72,31 @@ namespace DataTransferApi.Controllers
         public async Task<IActionResult> SearchUserFiles()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            {
-                var userFileGroups = await _storageService.SearchFilesAsync(userId);
-                return Ok(userFileGroups);
-            }
-            catch (Exception ex)
-            {
-                // Обработка исключения
-                return StatusCode(500, "Internal Server Error");
-            }
+            var userFileGroups = await _storageService.SearchFilesAsync(userId);
+            return Ok(userFileGroups);
+            
+
         }
 
         [HttpGet("downloadfile")]
         public async Task<IActionResult> DowloadFile(string groupName,string fileName)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            {
-                var tupleResult = await _storageService.DownloadFile(groupName, fileName, userId);
-                return File(tupleResult.Item1, tupleResult.Item2, tupleResult.Item3);
-            }
-            catch(Exception ex) 
-            {
-                throw;
-            }
+            var tupleResult = await _storageService.DownloadFile(groupName, fileName, userId);
+            return File(tupleResult.Item1, tupleResult.Item2, tupleResult.Item3);
+            
+
         }
 
         [HttpGet("downloadgroup")]
         public async Task<IActionResult> DownloadFileGroup(string groupName)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            { 
-                var groupTuples = await _storageService.DownloadFileGroup(groupName, userId);
-                var tupleResult = await _converter.ConvetGrTupleAsync(groupTuples);
-                return File(tupleResult.Item1, tupleResult.Item2,tupleResult.Item3);
+            var groupTuples = await _storageService.DownloadFileGroup(groupName, userId);
+            var tupleResult = await _converter.ConvetGrTupleAsync(groupTuples);
+            return File(tupleResult.Item1, tupleResult.Item2,tupleResult.Item3);
                 
-                //
-                //return filesGroup;
-            }
-            catch(Exception ex)
-            {
-                return NotFound($"{ex.Message}");
-            }
+
         }
 
 
@@ -131,16 +104,11 @@ namespace DataTransferApi.Controllers
         public async Task<IActionResult> GetLinkFile(string groupName, string fileName)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            {
-                var tokenGet = await _oneTokenService.CreateOneFileTokenAsync(groupName,fileName,userId);
-                string link = Url.Action("DownloadFileLink", "FileOperations", new {token = tokenGet }, Request.Scheme);
-                return Ok(link);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var tokenGet = await _oneTokenService.CreateOneFileTokenAsync(groupName,fileName,userId);
+            string link = Url.Action("DownloadFileLink", "FileOperations", new {token = tokenGet }, Request.Scheme);
+            return Ok(link);
+            
+
         }
 
 
@@ -148,16 +116,11 @@ namespace DataTransferApi.Controllers
         public async Task<IActionResult> GetLinkGroup(string groupName)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            {
-                var tokenGet = await _oneTokenService.CreateOneGroupTokenAsync(groupName, userId);
-                string link = Url.Action("DownloadFileLink", "FileOperations", new { token = tokenGet }, Request.Scheme);
-                return Ok(link);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var tokenGet = await _oneTokenService.CreateOneGroupTokenAsync(groupName, userId);
+            string link = Url.Action("DownloadFileLink", "FileOperations", new { token = tokenGet }, Request.Scheme);
+            return Ok(link);
+            
+
         }
 
 
@@ -166,10 +129,11 @@ namespace DataTransferApi.Controllers
         [HttpGet("dowlowdanon")]
         public async Task<IActionResult> DownloadFileLink(string token)
         {
+
+            await _tokenLock.WaitAsync();
+
             try
             {
-                await _tokenLock.WaitAsync();
-
                 int countToken = await _oneTokenService.TokenCheck(token);
                 if (countToken == 1)
                 {
@@ -182,15 +146,9 @@ namespace DataTransferApi.Controllers
                     var tupleResult = await _converter.ConvetGrTupleAsync(groupTuples);
                     return File(tupleResult.Item1, tupleResult.Item2, tupleResult.Item3);
                 }
-                
-            }
-            catch (Exception ex) 
-            {
-                throw ex;
             }
             finally
             {
-                // Важно освободить мьютекс, чтобы другие запросы могли получить доступ
                 _tokenLock.Release();
             }
         }
@@ -200,33 +158,22 @@ namespace DataTransferApi.Controllers
         public async Task<IActionResult> CheckLoadFile(string groupName, string fileName)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            {
-                int percatage= await _storageService.LoadPercAsync(groupName, fileName, userId);
-                string percStr = $"{percatage} upload {fileName}";
+           
+            int percatage= await _storageService.LoadPercAsync(groupName, fileName, userId);
+            string percStr = $"{percatage}% upload {fileName}";
                 return Ok(percStr);
-            }
-            catch(Exception ex)
-            {
-                throw ex;
-            }
+            
+
         }
 
         [HttpGet("checkgroupload")]
         public async Task<IActionResult> CheckLoadGroup(string groupName)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            {
-                int percatage = await _storageService.LoadPercGroupAsync(groupName , userId);
-                string percStr = $"{percatage} upload {groupName}";
+           
+            int percatage = await _storageService.LoadPercGroupAsync(groupName , userId);
+            string percStr = $"{percatage}% upload {groupName}";
                 return Ok(percStr);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
         }
     }
 }

@@ -1,89 +1,89 @@
 ﻿using DataTransferApi.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using System.Web.Http.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.IdentityModel.Tokens;
 
-public class FileExceptionFilter : ExceptionFilterAttribute
+public class ExceptionFilter : ExceptionFilterAttribute
 {
-    public override void OnException(HttpActionExecutedContext context)
+    private readonly ILogger<ExceptionFilter> _logger;
+    public ExceptionFilter(ILogger<ExceptionFilter> logger)
     {
-        if (context.Exception is NotFoundException)
-        {
-            HandleNotFoundException(context);
-        }
-        else if (context.Exception is NotFullLoad)
-        {
-            HandleNotFullLoadException(context);
-        }
-        else if (context.Exception is TokenException)
-        {
-            HandleTokenException(context);
-        }
-        else
-        {
-            HandleOtherExceptions(context);
-        }
+        _logger = logger;
     }
 
-    private void HandleNotFoundException(HttpActionExecutedContext context)
+    public override void OnException(ExceptionContext context)
     {
-        var ex = context.Exception as NotFoundException;
-        context.Response = new HttpResponseMessage(HttpStatusCode.NotFound)
+
+        base.OnException(context);
+        var statusCode = HttpStatusCode.BadRequest;
+        Error? error = null;
+        switch (context.Exception)
         {
-            Content = new StringContent(ex.Message),
-            ReasonPhrase = "Not Found"
+            case GroupNotFoundException ex:
+                _logger.LogError(ex.Message + ex.FileName);
+                error = new Error(ErrorCode.NotFound, ex.Message + " " + ex.FileName);
+                break;
+            case CustFileNotFoundException ex:
+                _logger.LogError(ex.Message + ex.FileName);
+                error = new Error(ErrorCode.NotFound, ex.Message +" " + ex.FileName);
+                break;
+            case NotFoundException ex:
+                _logger.LogError(ex.Message);
+                error = new Error(ErrorCode.NotFound, ex.Message);
+                break;
+            case System.IO.FileNotFoundException ex:
+                _logger.LogError(ex.Message);
+                error = new(ErrorCode.NotFound, ex.Message);
+                break;
+            case TokenTimeOutException ex:
+                _logger.LogError(ex.Message);
+                error = new(ErrorCode.NotFound, ex.Message);
+                break;
+            case TokenException ex:
+                _logger.LogError(ex.Message);
+                error = new(ErrorCode.NotFound, ex.Message);
+                break;
+            case NotFullLoad ex:
+                _logger.LogError(ex.Message);
+                error = new(ErrorCode.NotFound, ex.Message);
+                break;
+            case UnauthorizedAccessException ex:
+                _logger.LogError(ex.Message);
+                error = new(ErrorCode.Unauthorized, ex.Message);
+                break;
+            case Exception ex:
+                _logger.LogError(ex.Message);
+                error = new(ErrorCode.ServerError, ex.Message);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(context.Exception));
+        }
+
+        if (error == null) return;
+        var result = new ObjectResult(error)
+        {
+            StatusCode = (int)error.ErrorCode
         };
-    }
 
-    private void HandleNotFullLoadException(HttpActionExecutedContext context)
-    {
-        var ex = context.Exception as NotFullLoad;
-        if (ex is NotFileFullLoad)
-        {
-            var fileEx = ex as NotFileFullLoad;
-            context.Response = new HttpResponseMessage(HttpStatusCode.BadRequest)
-            {
-                Content = new StringContent(ex.Message),
-                ReasonPhrase = "Bad Request"
-            };
-            
-        }
-        else
-        {
-            context.Response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
-            {
-                Content = new StringContent(ex.Message),
-                ReasonPhrase = "Internal Server Error"
-            };
-        }
+        context.Result = result;
     }
+}
 
-    private void HandleTokenException(HttpActionExecutedContext context)
+public class Error
+{
+    public ErrorCode ErrorCode { get; }
+    public string ErrorMessage { get; }
+    public Error(ErrorCode code, string message)
     {
-        var ex = context.Exception as TokenException;
-        if (ex is TokenTimeOutException)
-        {
-            context.Response = new HttpResponseMessage(HttpStatusCode.Unauthorized)
-            {
-                Content = new StringContent(ex.Message),
-                ReasonPhrase = "Token Error"
-            };
-        }
-        else
-        {
-            context.Response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
-            {
-                Content = new StringContent(ex.Message),
-                ReasonPhrase = "Internal Server Error"
-            };
-        }
+        ErrorCode = code;
+        ErrorMessage = message;
     }
+}
 
-    private void HandleOtherExceptions(HttpActionExecutedContext context)
-    {
-        context.Response = new HttpResponseMessage(HttpStatusCode.InternalServerError)
-        {
-            Content = new StringContent("An error occurred"),
-            ReasonPhrase = "Internal Server Error"
-        };
-    }
+public enum ErrorCode
+{
+    NotFound = 400,
+    ServerError = 500,
+    Unauthorized = 401
 }

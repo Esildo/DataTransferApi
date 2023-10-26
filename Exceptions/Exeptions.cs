@@ -18,10 +18,10 @@ namespace DataTransferApi.Exceptions
         }
     }
 
-    public class FileNotFoundException : NotFoundException
+    public class CustFileNotFoundException : NotFoundException
     {
         public string FileName { get; }
-        public FileNotFoundException(string message, string fName) : base(message)
+        public CustFileNotFoundException(string message, string fName) : base(message)
         {
             FileName = fName;
         }

@@ -67,7 +67,7 @@ namespace DataTransferApi.Services
                 {
                     string fullPath = Path.Combine(groupDirectory, file.FileName);
 
-                    //Need to change if filename exists 
+                    
                     fullPath = GetFullPath(groupDirectory, fullPath, file, out string correctName);
 
                     using (var stream = new FileStream(fullPath, FileMode.Create))

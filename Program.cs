@@ -48,6 +48,7 @@ builder.Services.AddAuthentication(options =>
     });
 
 
+
 builder.Services.AddTransient<IConverterGroup, ConverterGroupZip>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddTransient<ICommandDBService, EFCommandHelperService>();

@@ -3758,11 +3758,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Nickv\\source\\repos\\TransferApi\\DataTransferApi-master\\DataTransferApi.csproj",
+      "projectUniqueName": "C:\\Users\\Nickv\\Transfer\\DataTransferApi\\DataTransferApi.csproj",
       "projectName": "DataTransferApi",
-      "projectPath": "C:\\Users\\Nickv\\source\\repos\\TransferApi\\DataTransferApi-master\\DataTransferApi.csproj",
+      "projectPath": "C:\\Users\\Nickv\\Transfer\\DataTransferApi\\DataTransferApi.csproj",
       "packagesPath": "C:\\Users\\Nickv\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Nickv\\source\\repos\\TransferApi\\DataTransferApi-master\\obj\\",
+      "outputPath": "C:\\Users\\Nickv\\Transfer\\DataTransferApi\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

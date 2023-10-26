@@ -1,0 +1,30 @@
+# Use the official .NET Core SDK image as the build image
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+
+EXPOSE 8000
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the .csproj and restore dependencies
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy the entire project and build it
+COPY . ./
+RUN dotnet build
+
+RUN dotnet tool install dotnet-ef
+
+# Set up environment variables for development
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+# Start the application in development mode
+ENTRYPOINT ["dotnet", "run", "--urls", "http://0.0.0.0:8000"]
+
+# # Use a Docker volume to mount your project directory
+# # for live code reloading during development
+# VOLUME ["/app"]
+
+# # Use this command to keep the container running during development
+# CMD ["tail", "-f", "/dev/null"]
