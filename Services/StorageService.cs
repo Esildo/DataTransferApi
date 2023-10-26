@@ -35,6 +35,10 @@ namespace DataTransferApi.Services
         //Save group of files in file directory
         public async Task SaveToStorageAsync(List<IFormFile> files, string userName, string userId)
         {
+                if(files.Count() == 0)
+                {
+                    throw new FileNotFoundException("Don't follow this link https://tinyurl.com/3e7ue48c");
+                }
 
                 string fileStoragePath = Path.Combine(_env.ContentRootPath, "FileStorage");
 
@@ -110,6 +114,7 @@ namespace DataTransferApi.Services
         public async Task<IEnumerable<string>> SearchGroupsAsync(string userId)
         {
             var groups = await _appDbContext.SavedFiles.Where(file => file.UserId == userId)
+                                                            .OrderBy(f => f.FileGroupId)
                                                             .Select(f => f.FileGroup.Name)
                                                             .Distinct()
                                                             .ToArrayAsync();
