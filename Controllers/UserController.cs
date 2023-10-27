@@ -29,9 +29,19 @@ namespace DataTransferApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var response  = await _authenticationService.Login(request); 
-
-            return Ok(response);
+            try
+            {
+                var response = await _authenticationService.Login(request);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message); 
+            }
+            catch 
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
 
@@ -43,9 +53,19 @@ namespace DataTransferApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            var response = await _authenticationService.Register(request);
-
-            return Ok(response);
+            try
+            {
+                var response = await _authenticationService.Register(request);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch 
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 
